@@ -17,9 +17,12 @@ services:
       - data:/data
 
   python:
-    image: python:3.7.10-slim-buster
+    image: python:3.7.10-slim
+    build: ./images/base_python_image/
     container_name: pythonc
     command: sleep 400
+    environment:
+      - RAW_DATA_PATH=/project/raw_data
     volumes:
       - data:/data
 

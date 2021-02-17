@@ -1,6 +1,6 @@
 table_name: raw_events
+load_prefix: events
 schema: raw
-delta: raw_events_delta
 delimiter: ","
 
 columns:

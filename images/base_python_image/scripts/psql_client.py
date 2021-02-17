@@ -4,9 +4,8 @@ from contextlib import closing
 from typing import List
 from dataclasses import dataclass
 import logging
-from os import listdir
-from os.path import join
-from scripts.sql_gen import SQLGenerator, TableMD
+from sql_gen import SQLGenerator, TableMD
+from typing import Optional
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -71,14 +70,16 @@ class PgHook:
             cur.execute(query)
             return cur.fetchall()
 
-    def load_to_table(self, table_md_path: str, src_path: str) -> None:
+    def load_to_table(
+        self, src_path: str, table_md: Optional[TableMD] = None, table_md_path: Optional[str] = None
+    ) -> None:
         """
-        This method loads CSV formatted files to a PostgreSQL database
+        This method loads CSV formatted files to a PostgreSQL database, the table is created if it does not exist
         """
-        table_md = TableMD(table_md_path=table_md_path)
+        if not table_md:
+            table_md = TableMD(table_md_path=table_md_path)
         sql_generator = SQLGenerator(table_md=table_md)
         self.execute(sql_generator.create_table_query())
-        for file in listdir(src_path):
-            self.execute(sql_generator.copy_query(src_path=join(src_path, file)))
+        self.execute(sql_generator.copy_query(src_path=src_path))
 
-
+    # maybe add a closing instead of all the with closings and get conn every time

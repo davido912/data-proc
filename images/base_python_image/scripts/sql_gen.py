@@ -26,6 +26,10 @@ class TableMD:
     def delimiter(self):
         return self.table_md["delimiter"]
 
+    @property
+    def load_prefix(self):
+        return self.table_md["load_prefix"]
+
 
 @dataclass
 class SQLGenerator:
