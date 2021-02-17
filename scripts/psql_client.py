@@ -4,6 +4,9 @@ from contextlib import closing
 from typing import List
 from dataclasses import dataclass
 import logging
+from os import listdir
+from os.path import join
+from scripts.sql_gen import SQLGenerator, TableMD
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -68,10 +71,14 @@ class PgHook:
             cur.execute(query)
             return cur.fetchall()
 
+    def load_to_table(self, table_md_path: str, src_path: str) -> None:
+        """
+        This method loads CSV formatted files to a PostgreSQL database
+        """
+        table_md = TableMD(table_md_path=table_md_path)
+        sql_generator = SQLGenerator(table_md=table_md)
+        self.execute(sql_generator.create_table_query())
+        for file in listdir(src_path):
+            self.execute(sql_generator.copy_query(src_path=join(src_path, file)))
 
-hook = PgHook(
-    database="voucher", user="voucher", password="password", host="localhost", port=5432
-)
-sql = """
-insert into testors values ('david')"""
-hook.execute(query=sql)
+
