@@ -4,3 +4,13 @@ COPY requirements.txt /requirements.txt
 
 ADD scripts /project/scripts
 ADD raw_data /project/raw_data
+
+RUN apt-get update -y -q  \
+    && apt-get install -y  \
+                libpq-dev \
+                gcc\
+                vim \
+                && apt-get clean \
+                && rm -rf /var/lib/apt/lists/*
+
+RUN $(command -v pip) install --user --no-cache-dir -r /requirements.txt

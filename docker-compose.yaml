@@ -1,4 +1,5 @@
 version: "3.8"
+
 services:
 
   postgres_db:
@@ -6,28 +7,30 @@ services:
     build: ./images/postgresql/
     container_name: postgres-db
     restart: unless-stopped
-    environment: &postgres_auth
-      - POSTGRES_USER=dev
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=events
+    environment: &postgres-auth
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events
     ports:
       - "5432:5432"
     volumes:
       - postgres_db:/var/lib/postgresql/data
-      - data:/data
+      - data:/tmp
 
   python:
     image: python:3.7.10-slim
     build: ./images/base_python_image/
+    depends_on:
+      - postgres_db
     container_name: pythonc
-    command: sleep 400
+    command: sleep 5000
     environment:
-      - RAW_DATA_PATH=/project/raw_data
+      <<: *postgres-auth
+      RAW_DATA_PATH: /project/raw_data
+      POSTGRES_HOST: postgres-db
+      POSTGRES_PORT: 5432
     volumes:
-      - data:/data
-
-
-
+      - data:/tmp
 
 
 volumes:
