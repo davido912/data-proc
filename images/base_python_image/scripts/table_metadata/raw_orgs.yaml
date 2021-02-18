@@ -1,0 +1,14 @@
+table_name: raw_orgs
+load_prefix: orgs
+schema: raw
+delimiter: ","
+
+columns:
+  - name: organization_key
+    type: varchar
+    length: 300
+  - name: organization_name
+    type: varchar
+    length: 100
+  - name: created_at
+    type: timestamp

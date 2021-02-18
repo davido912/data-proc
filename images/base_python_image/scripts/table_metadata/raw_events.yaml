@@ -1,7 +1,13 @@
 table_name: raw_events
 load_prefix: events
 schema: raw
+
 delimiter: ","
+filter_key: received_at
+
+delta_params:
+  delta_table: raw_events_delta
+  delta_key: received_at
 
 columns:
   - name: id
@@ -27,6 +33,7 @@ columns:
     length: 100
   - name: received_at
     type: timestamp
+
 
 
 
