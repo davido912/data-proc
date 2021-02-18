@@ -1,6 +1,6 @@
 import yaml
 from dataclasses import dataclass
-
+from typing import List
 
 @dataclass
 class TableMD:
@@ -11,7 +11,7 @@ class TableMD:
             self.table_md = yaml.load(f, Loader=yaml.FullLoader)
 
     @property
-    def table_name(self):
+    def table_name(self) -> str:
         return self.table_md["table_name"]
 
     @property
@@ -19,16 +19,25 @@ class TableMD:
         return self.table_md["schema"]
 
     @property
-    def columns(self):
+    def columns(self) -> List[dict]:
         return self.table_md["columns"]
 
     @property
-    def delimiter(self):
+    def delimiter(self) -> str:
         return self.table_md["delimiter"]
 
     @property
-    def load_prefix(self):
+    def load_prefix(self) -> str:
         return self.table_md["load_prefix"]
+
+    @property
+    def filter_key(self) -> str:
+        # get used to return None when not found because this key is not required
+        return self.table_md.get("filter_key")
+
+    @property
+    def delta_params(self) -> str:
+        return self.table_md.get("delta_params")
 
 
 @dataclass
@@ -63,3 +72,12 @@ class SQLGenerator:
             delimiter=self.table_md.delimiter,
             columns=",".join([col.get("name") for col in self.table_md.columns]),
         )
+
+    def upsert_on_id(self):
+        return """DELETE FROM {schema}.{master_table} WHERE {delta_key}
+        IN (SELECT {delta_key} FROM {schema}.{delta_table});
+        INSERT INTO {schema}.{master_table} FROM (SELECT * FROM {schema}.{delta_table});
+        """.format() #TODO finish
+
+
+

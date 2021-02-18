@@ -25,14 +25,16 @@ class PgHook:
     :param host: the endpoint to connect to the database (e.g. localhost)
     :type host: str
     :param port: port exposed by postgres to connect through (default 5432)
-    :type port: int
+    :type port: str
     """
 
     database: str
     user: str
     password: str
     host: str
-    port: int
+    port: str
+
+    # def __post_init__(self):
 
     def get_conn(self):
         """
@@ -83,3 +85,4 @@ class PgHook:
         self.execute(sql_generator.copy_query(src_path=src_path))
 
     # maybe add a closing instead of all the with closings and get conn every time
+
