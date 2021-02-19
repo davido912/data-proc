@@ -26,7 +26,6 @@ services:
     container_name: python-app
     environment:
       <<: *postgres-auth
-      RAW_DATA_PATH: /project/raw_data
       POSTGRES_HOST: postgres-db
       POSTGRES_PORT: 5432
     volumes:
