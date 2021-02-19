@@ -1,11 +1,13 @@
 import psycopg2
 import psycopg2.extras
+import psycopg2.extensions
 from contextlib import closing
 from typing import List
 from dataclasses import dataclass
 import logging
 from sql_gen import SQLGenerator, TableMD
 from typing import Optional, Union
+
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -14,7 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PgHook:
     """
-    This hook is used externally to Airflow to connect the API to the Postgres Database containing voucher related
+    PostgreSQL hook to connect to a PostgreSQL database and execute commands/load data
     data.
     :param database: database name containing the relevant schemas & tables
     :type database: str
@@ -36,9 +38,11 @@ class PgHook:
 
     # def __post_init__(self):
 
-    def get_conn(self):
+    def get_conn(self) -> psycopg2.extensions.connection:
         """
-        This method returns a connection object for postgres.
+        Connects to a PostgreSQL database and returns a connection object
+        :return: A connection object
+        :rtype: psycopg2.extensions.connection
         """
         logger.debug(
             f"establishing connection: {{ database: {self.database}, user: {self.user}, host: {self.host}, port: {self.port} }} "
@@ -52,7 +56,10 @@ class PgHook:
         )
 
     def execute(self, queries: Union[List[str], str]) -> None:
-        # TODO: add functionality for logging here and also logging if any rows are updated
+        """Executes a singular query or several queries against a PostgreSQL database
+        :param queries: A single string query or a list of queries to execute
+        :type queries: Union[List[str], str]
+        """
         if isinstance(queries, str):
             queries = [queries]
         with closing(self.get_conn()) as conn:
@@ -62,24 +69,20 @@ class PgHook:
                     cur.execute(query)
             conn.commit()
 
-    def fetch_query_results(self, query: str) -> List[List[psycopg2.extras.DictRow]]:
-        """
-        This method executes a query and fetches all of the results in the query (think about yielding)
-        :return: A list of lists, where each list contains a psycopg2 DictRow object which allows
-                to key -> value retrieve values from it
-        :rtype: List[List[psycopg2.extras.DictRow]
-        """
-        with closing(
-            self.get_conn().cursor(cursor_factory=psycopg2.extras.DictCursor)
-        ) as cur:
-            cur.execute(query)
-            return cur.fetchall()
-
     def load_to_table(
-        self, src_path: str, table_md: Optional[TableMD] = None, table_md_path: Optional[str] = None
+        self,
+        src_path: str,
+        table_md: Optional[TableMD] = None,
+        table_md_path: Optional[str] = None,
     ) -> None:
-        """
-        This method loads CSV formatted files to a PostgreSQL database, the table is created if it does not exist
+        """Load data to a designated table using table metadata yaml file to construct the table. Only CSV format
+        is valid.
+        :param src_path: A single string query or a list of queries to execute
+        :type src_path: str
+        :param table_md: Parsed YAML file containing table metadata
+        :type table_md: Optional[TableMD]
+        :param table_md_path: Path to a table metadata YAML file
+        :type table_md_path: Optional[str]
         """
         if not table_md:
             table_md = TableMD(table_md_path=table_md_path)
@@ -93,4 +96,3 @@ class PgHook:
             queries.append(sql_generator.upsert_on_id())
 
         self.execute(queries)
-
