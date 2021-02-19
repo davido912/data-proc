@@ -1,4 +1,3 @@
 \c events;
-CREATE SCHEMA raw;
-CREATE SCHEMA staging;
-CREATE SCHEMA production;
+CREATE SCHEMA IF NOT EXISTS raw;
+CREATE SCHEMA IF NOT EXISTS modelled;
