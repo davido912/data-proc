@@ -5,7 +5,7 @@ from typing import List
 from dataclasses import dataclass
 import logging
 from sql_gen import SQLGenerator, TableMD
-from typing import Optional
+from typing import Optional, Union
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -51,8 +51,10 @@ class PgHook:
             port=self.port,
         )
 
-    def execute(self, queries: List[str]) -> None:
+    def execute(self, queries: Union[List[str], str]) -> None:
         # TODO: add functionality for logging here and also logging if any rows are updated
+        if isinstance(queries, str):
+            queries = [queries]
         with closing(self.get_conn()) as conn:
             with closing(conn.cursor()) as cur:
                 for query in queries:
