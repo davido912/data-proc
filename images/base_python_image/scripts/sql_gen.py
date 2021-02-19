@@ -1,10 +1,14 @@
 import yaml
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict, Union
 
 
 @dataclass
 class TableMD:
+    """This class is used as an interface between table metadata YAML files and importers
+    :param table_md_path: Path to a table metadata YAML file
+    :type table_md_path: str
+    """
     table_md_path: str
 
     def __post_init__(self):
@@ -32,17 +36,22 @@ class TableMD:
         return self.table_md["load_prefix"]
 
     @property
-    def filter_key(self) -> str:
+    def filter_key(self) -> Union[str, None]:
         # get used to return None when not found because this key is not required
         return self.table_md.get("filter_key")
 
     @property
-    def delta_params(self) -> str:
+    def delta_params(self) -> Union[Dict[str], None]:
         return self.table_md.get("delta_params")
 
 
 @dataclass
 class SQLGenerator:
+    """This class uses the table metadata to construct different SQL strings for dropping/creating/copying data
+    into tables.
+    :param table_md: Parsed YAML file containing table metadata
+    :type table_md: TableMD
+    """
 
     table_md: TableMD
 
@@ -81,6 +90,10 @@ class SQLGenerator:
         )
 
     def upsert_on_id(self) -> str:
+        """
+        Load data from a delta table (containing only a subset of the data) into a master
+        table containing the full dataset. Load replaces entries existing on both tables using a specific key.
+        """
         return """
         CREATE TABLE IF NOT EXISTS {schema}.{master_table} (LIKE {schema}.{delta_table});
         DELETE FROM {schema}.{master_table} WHERE {delta_key}

@@ -21,6 +21,18 @@ def extract_data(
     date_filter_key: Optional[str] = None,
     date_filter_val: Optional[str] = None,
 ) -> None:
+    """
+    Extract data from JSON input file. This function uses the table metadata to decide
+    if to filter extracted data according to specific date key.
+    :param src_path: Path leading to input JSON file
+    :type src_path: str
+    :param dst_path: Path for output file
+    :type dst_path: str
+    :param date_filter_key: Dimension (column) according to which the data should be filtered
+    :type date_filter_key: Optional[str]
+    :param date_filter_val: The specific date value to filter against
+    :type date_filter_val: Optional[str]
+    """
     df = pd.read_json(path_or_buf=src_path)
     # TODO: unit test that between only gets the dates on the day we expect
     if date_filter_key and date_filter_val:
@@ -32,7 +44,11 @@ def extract_data(
 
 
 class TempDir(TemporaryDirectory):
-    # unfortunately TemporaryDirectory hardcodes 0o700 so this is a tweak to the class
+    """
+    Creates a temporary directory on host which is wiped after operations are done. Temporary
+    directory hardcodes 0700 permissions and 0755 permissions are required for cross-container access.
+    os.chmod is used to bypass this (hacky but works).
+    """
     def __enter__(self) -> str:
         os.chmod(self.name, 0o755)
         return self.name
@@ -44,6 +60,19 @@ def import_sources(
     raw_data_dir: str,
     date_filter_val: Optional[str] = None,
 ) -> None:
+    """
+    This function iterates over table metadata files in a specific directory path, importing
+    all of them and loading them to a PostgreSQL database. Glob is used to load several files (if relevant)
+    using file prefix.
+    :param pg_hook: PostgreSQL connection client
+    :type pg_hook: PgHook
+    :param tables_md_dir: Path leading to table metadata directory
+    :type tables_md_dir: str
+    :param raw_data_dir: Path leading to raw output to extract data from
+    :type raw_data_dir: str
+    :param date_filter_val: The specific date value to filter against
+    :type date_filter_val: Optional[str]
+    """
     for table_md in listdir(tables_md_dir):
         md = TableMD(table_md_path=join(tables_md_dir, table_md))
         logger.debug(f"processing data for table {md.table_name}")
