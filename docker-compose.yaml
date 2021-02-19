@@ -22,8 +22,8 @@ services:
     build: ./images/base_python_image/
     depends_on:
       - postgres_db
-    container_name: pythonc
-    command: sleep 5000
+    tty: true # keeps container running in interactive mode
+    container_name: python-app
     environment:
       <<: *postgres-auth
       RAW_DATA_PATH: /project/raw_data

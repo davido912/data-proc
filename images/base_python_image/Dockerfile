@@ -10,6 +10,8 @@ RUN apt-get update -y -q  \
                 libpq-dev \
                 gcc\
                 vim \
+                tmux \
+                postgresql-client \
                 && apt-get clean \
                 && rm -rf /var/lib/apt/lists/*
 
