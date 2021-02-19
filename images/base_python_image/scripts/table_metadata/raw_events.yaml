@@ -1,4 +1,4 @@
-table_name: raw_events
+table_name: raw_events_delta
 load_prefix: events
 schema: raw
 
@@ -6,7 +6,7 @@ delimiter: ","
 filter_key: received_at
 
 delta_params:
-  delta_table: raw_events_delta
+  master_table: raw_events
   delta_key: received_at
 
 columns:

@@ -51,12 +51,13 @@ class PgHook:
             port=self.port,
         )
 
-    def execute(self, query: str) -> None:
+    def execute(self, queries: List[str]) -> None:
         # TODO: add functionality for logging here and also logging if any rows are updated
         with closing(self.get_conn()) as conn:
             with closing(conn.cursor()) as cur:
-                logger.debug(f"executing query: {query}")
-                cur.execute(query)
+                for query in queries:
+                    logger.debug(f"executing query: {query}")
+                    cur.execute(query)
             conn.commit()
 
     def fetch_query_results(self, query: str) -> List[List[psycopg2.extras.DictRow]]:
@@ -81,8 +82,13 @@ class PgHook:
         if not table_md:
             table_md = TableMD(table_md_path=table_md_path)
         sql_generator = SQLGenerator(table_md=table_md)
-        self.execute(sql_generator.create_table_query())
-        self.execute(sql_generator.copy_query(src_path=src_path))
+        queries = [
+            sql_generator.drop_table(),
+            sql_generator.create_table_query(),
+            sql_generator.copy_query(src_path=src_path),
+        ]
+        if table_md.delta_params:
+            queries.append(sql_generator.upsert_on_id())
 
-    # maybe add a closing instead of all the with closings and get conn every time
+        self.execute(queries)
 

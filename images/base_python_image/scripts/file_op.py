@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
+#TODO ADD CASES WHEN DATE DOES NOT EXIST AND SO FORTH
 def extract_data(
     src_path: str,
     dst_path: str,

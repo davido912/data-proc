@@ -2,6 +2,7 @@ import yaml
 from dataclasses import dataclass
 from typing import List
 
+
 @dataclass
 class TableMD:
     table_md_path: str
@@ -45,8 +46,14 @@ class SQLGenerator:
 
     table_md: TableMD
 
+    def drop_table(self) -> str:
+        return """DROP TABLE IF EXISTS {schema}.{table_name};
+        """.format(
+            schema=self.table_md.schema_name, table_name=self.table_md.table_name
+        )
+
     def create_table_query(self) -> str:
-        sql = "CREATE TABLE IF NOT EXISTS {schema_name}.{table_name}({columns});"
+        sql = "CREATE TABLE IF NOT EXISTS {schema}.{table_name}({columns});"
         columns = []
         for column_md in self.table_md.columns:
             column = f"{column_md['name']} {column_md['type']}"
@@ -55,7 +62,7 @@ class SQLGenerator:
             columns.append(column)
 
         return sql.format(
-            schema_name=self.table_md.schema_name,
+            schema=self.table_md.schema_name,
             table_name=self.table_md.table_name,
             columns=",".join(columns),
         )
@@ -73,11 +80,15 @@ class SQLGenerator:
             columns=",".join([col.get("name") for col in self.table_md.columns]),
         )
 
-    def upsert_on_id(self):
-        return """DELETE FROM {schema}.{master_table} WHERE {delta_key}
+    def upsert_on_id(self) -> str:
+        return """
+        CREATE TABLE IF NOT EXISTS {schema}.{master_table} (LIKE {schema}.{delta_table});
+        DELETE FROM {schema}.{master_table} WHERE {delta_key}
         IN (SELECT {delta_key} FROM {schema}.{delta_table});
-        INSERT INTO {schema}.{master_table} FROM (SELECT * FROM {schema}.{delta_table});
-        """.format() #TODO finish
-
-
-
+        INSERT INTO {schema}.{master_table} SELECT * FROM {schema}.{delta_table};
+        """.format(
+            schema=self.table_md.schema_name,
+            master_table=self.table_md.delta_params["master_table"],
+            delta_key=self.table_md.delta_params["delta_key"],
+            delta_table=self.table_md.table_name,
+        )
