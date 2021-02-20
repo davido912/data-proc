@@ -23,6 +23,9 @@ def teardown_module(module):
 ### extract_data tests
 ##########
 def test_extract_data():
+    """This tests the extraction function from a JSON file. NamedTemporaryFile/Temporary files are used
+    for creating temporary environments to store the outputs/inputs and read from them for assertions.
+    """
     expected = [
         "id,event_type,event_ts\n",
         "foo,created,2020-12-08 20:03:16.759617\n",
@@ -40,6 +43,10 @@ def test_extract_data():
 
 
 def test_extract_data_filter():
+    """This tests the extraction function from a JSON file. NamedTemporaryFile/Temporary files are used
+    for creating temporary environments to store the outputs/inputs and read from them for assertions.
+    In here, the filtering mechanism is tested where a specific date is passed.
+    """
     expected = ["id,event_type,event_ts\n", "foo,created,2020-12-08 20:03:16.759617\n"]
     with NamedTemporaryFile() as inputfile:
         inputfile.write(get_mock_json().encode("utf-8"))
@@ -61,6 +68,18 @@ def test_extract_data_filter():
 ### import_sources tests
 ##########
 def test_import_sources():
+    """This tests the import sources function which already uses functions that were already tested. This function
+    tests the full composition of this function.
+    TemporaryDirectories and NamedTemporaryFiles are used for simulating the environment. The import sources function
+    uses prefix to pick up files for loading, and therefore requires that the raw data is stored in the following
+    structure:
+    .
+    └── raw_data directory
+        └── subdir (e.g. organization_data)
+            ├── foo.csv
+            └── bar.csv
+
+    """
     raw_data_dir = TemporaryDirectory(dir="/tmp", prefix="raw_data")
     test_data_dir = join(raw_data_dir.name, "test")
     mkdir(test_data_dir)
