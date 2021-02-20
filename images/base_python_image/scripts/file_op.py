@@ -6,7 +6,6 @@ from psql_client import PgHook
 from glob import glob
 from tempfile import TemporaryDirectory
 import logging
-import os
 from datetime import datetime, timedelta
 from typing import Optional
 
@@ -43,17 +42,7 @@ def extract_data(
     df.to_csv(dst_path, index=False)
 
 
-class TempDir(TemporaryDirectory):
-    """
-    Creates a temporary directory on host which is wiped after operations are done. Temporary
-    directory hardcodes 0700 permissions and 0755 permissions are required for cross-container access.
-    os.chmod is used to bypass this (hacky but works).
-    """
-    def __enter__(self) -> str:
-        os.chmod(self.name, 0o755)
-        return self.name
-
-
+#TODO add more significant values when files dont exist so an indication that nothing was loaded exists
 def import_sources(
     pg_hook: PgHook,
     tables_md_dir: str,
@@ -78,7 +67,7 @@ def import_sources(
         logger.debug(f"processing data for table {md.table_name}")
         src_dir_path = join(raw_data_dir, md.load_prefix)
         logger.debug(f"src_dir_path is {src_dir_path}")
-        with TempDir(dir="/tmp", prefix=md.load_prefix) as tmpdir:
+        with TemporaryDirectory(dir="/tmp", prefix=md.load_prefix) as tmpdir:
             for i, file in enumerate(glob(join(src_dir_path, "**"))):
                 src_file_path = join(src_dir_path, file)
                 logger.debug(f"src_file_path is {src_file_path}")

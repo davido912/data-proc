@@ -75,14 +75,13 @@ class SQLGenerator:
             columns=",".join(columns),
         )
 
-    def copy_query(self, src_path: str) -> str:
-        return """COPY {schema}.{table_name} ({columns})
-        FROM '{src_path}'
+    def copy_query(self) -> str:
+        return """COPY {schema}.{table_name} ({columns}) FROM STDIN 
+        WITH
         DELIMITER '{delimiter}'
-        CSV HEADER;
+        CSV HEADER
         """.format(
             schema=self.table_md.schema_name,
-            src_path=src_path,
             table_name=self.table_md.table_name,
             delimiter=self.table_md.delimiter,
             columns=",".join([col.get("name") for col in self.table_md.columns]),

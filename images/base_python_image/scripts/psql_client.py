@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import logging
 from sql_gen import SQLGenerator, TableMD
 from typing import Optional, Union
+from os.path import isfile
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -35,8 +36,6 @@ class PgHook:
     password: str
     host: str
     port: str
-
-    # def __post_init__(self):
 
     def get_conn(self) -> psycopg2.extensions.connection:
         """
@@ -69,6 +68,24 @@ class PgHook:
                     cur.execute(query)
             conn.commit()
 
+    def copy_expert(self, query: str, src_path: str) -> None:
+        """Load data from a specific CSV file using a COPY command. Note, the psycopg2 given method
+        silently fails when file for loading does not exist, hence an exception was added.
+        :param query: SQL COPY query
+        :type query: str
+        :param src_path: Path leading to the file for loading
+        :type src_path: str
+        """
+        if not isfile(src_path):
+            raise FileNotFoundError(f"{src_path} not found")
+
+        logger.info(f"copying file from: {src_path}")
+        with open(src_path, "r") as f:
+            with closing(self.get_conn()) as conn:
+                with closing(conn.cursor()) as cur:
+                    cur.copy_expert(query, f)
+                conn.commit()
+
     def load_to_table(
         self,
         src_path: str,
@@ -90,10 +107,11 @@ class PgHook:
         queries = [
             sql_generator.drop_table(),
             sql_generator.create_table_query(),
-            sql_generator.copy_query(src_path=src_path),
         ]
-        if table_md.delta_params:
-            queries.append(sql_generator.upsert_on_id())
-
         self.execute(queries)
+
+        self.copy_expert(src_path=src_path, query=sql_generator.copy_query())
+
+        if table_md.delta_params:
+            self.execute(sql_generator.upsert_on_id())
 
