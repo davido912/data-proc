@@ -28,6 +28,7 @@ services:
       <<: *postgres-auth
       POSTGRES_HOST: postgres-db
       POSTGRES_PORT: 5432
+      PYTHONPATH: /project/scripts
     volumes:
       - data:/tmp
 

@@ -3,3 +3,5 @@ pandas
 pyyaml
 termcolor
 pyfiglet
+pytest
+pytest-mock
