@@ -77,7 +77,7 @@ class PgHook:
     ) -> None:
         """Load data to a designated table using table metadata yaml file to construct the table. Only CSV format
         is valid.
-        :param src_path: A single string query or a list of queries to execute
+        :param src_path: Path to the file to load into the database (singular file)
         :type src_path: str
         :param table_md: Parsed YAML file containing table metadata
         :type table_md: Optional[TableMD]
@@ -96,3 +96,4 @@ class PgHook:
             queries.append(sql_generator.upsert_on_id())
 
         self.execute(queries)
+
