@@ -41,9 +41,8 @@ class TableMD:
         return self.table_md.get("filter_key")
 
     @property
-    def delta_params(self) -> Union[Dict[str], None]:
+    def delta_params(self) -> Union[Dict, None]:
         return self.table_md.get("delta_params")
-
 
 @dataclass
 class SQLGenerator:
