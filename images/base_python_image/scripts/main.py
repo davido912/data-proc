@@ -5,7 +5,6 @@ from termcolor import colored
 from pathlib import Path
 from os.path import join
 from psql_client import PgHook
-from os.path import expandvars
 from typing import Union
 from os.path import dirname
 
@@ -47,17 +46,9 @@ def cli() -> Union[str, None]:
 
 
 def main():
-    hook = PgHook(
-        database=expandvars("$POSTGRES_DB"),
-        user=expandvars("$POSTGRES_USER"),
-        password=expandvars("$POSTGRES_PASSWORD"),
-        host=expandvars("$POSTGRES_HOST"),
-        port=expandvars("$POSTGRES_PORT"),
-    )
     while True:
         val = cli()
         import_sources(
-            pg_hook=hook,
             tables_md_dir=TABLE_METADATA_DIR,
             raw_data_dir=RAW_DATA_DIR,
             date_filter_val=val,
@@ -66,7 +57,8 @@ def main():
         with open(join(SQL_MODELLING_DIR, "fact_events.sql"), "r") as f:
             sql = f.read()
 
-        hook.execute(sql)
+        pg_hook = PgHook()
+        pg_hook.execute(sql)
 
 
 if __name__ == "__main__":

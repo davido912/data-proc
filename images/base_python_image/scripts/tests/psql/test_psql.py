@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 from psql_client import PgHook
 from sql_gen import SQLGenerator
 from tempfile import NamedTemporaryFile
-from os.path import expandvars
 
 MOCK_DB_AUTH = {
     "database": "test",
@@ -16,24 +15,14 @@ MOCK_DB_AUTH = {
 
 def setup_module(module):
     print("SETTING UP TEST ENVIRONMENT IN DATABASE")
-    hook = pgres_hook()
+    hook = PgHook()
     hook.execute("CREATE SCHEMA test;")
 
 
 def teardown_module(module):
     print("\nTEARING DOWN TEST ENVIRONMENT IN DATABASE")
-    hook = pgres_hook()
+    hook = PgHook()
     hook.execute("DROP SCHEMA test CASCADE;")
-
-
-def pgres_hook():
-    return PgHook(
-        database=expandvars("$POSTGRES_DB"),
-        user=expandvars("$POSTGRES_USER"),
-        password=expandvars("$POSTGRES_PASSWORD"),
-        host=expandvars("$POSTGRES_HOST"),
-        port=expandvars("$POSTGRES_PORT"),
-    )
 
 
 def table_metadata_mock():
@@ -74,7 +63,7 @@ def test_execute_accepts_types(mocker, queries):
 
 @pytest.mark.parametrize("queries", ["SELECT 1;", ["SELECT 1;", "SELECT 1;"]])
 def test_execute(queries):
-    hook = pgres_hook()
+    hook = PgHook()
     hook.execute(queries)
 
 
@@ -85,13 +74,13 @@ def drop_table():
     """
     yield
     table_md_mock = table_metadata_mock()
-    hook = pgres_hook()
+    hook = PgHook()
     hook.execute(f"DROP TABLE {table_md_mock.schema_name}.{table_md_mock.table_name};")
 
 
 def test_load_to_table(drop_table):
     """Tests that data is loaded to a certain table"""
-    hook = pgres_hook()
+    hook = PgHook()
     table_md_mock = table_metadata_mock()
     header = ["name", "id"]
     row = ["david", "fz234kal"]
@@ -116,7 +105,7 @@ def test_load_to_table_delta():
     """Tests that upserts work. This is done by adding the delta_params inside the table metadatabase and comparing
     that the row exists in both tables (master and delta) and that indeed the row matches the expected input
     """
-    hook = pgres_hook()
+    hook = PgHook()
     table_md_mock = table_metadata_mock()
     table_md_mock.delta_params = {
         "master_table": table_md_mock.table_name,
@@ -124,8 +113,8 @@ def test_load_to_table_delta():
     }
     table_md_mock.table_name = f"{table_md_mock.table_name}_delta"
     header = ["name", "id"]
-    row = ["david", "fz234kal"]
-    input_data = [header, row]
+    data = ["david", "fz234kal"]
+    input_data = [header, data]
     with NamedTemporaryFile(
         dir="/tmp", prefix=table_md_mock.load_prefix, mode="w+"
     ) as f:
@@ -143,13 +132,13 @@ def test_load_to_table_delta():
             )
             result = cur.fetchall()
             # check that the row was indeed loaded
-            assert list(set(result)) == row
+            assert result == [tuple(data), tuple(data)]
             # check that the same row is present both on the delta and master table
             assert result[0] == result[1]
 
 
 def test_copy_expert():
-    hook = pgres_hook()
+    hook = PgHook()
     table_md_mock = table_metadata_mock()
     sql_gen = SQLGenerator(table_md=table_md_mock)
     header = ["name", "id"]
@@ -174,7 +163,7 @@ def test_copy_expert():
 
 def test_copy_expert_file_not_exists():
     """Tests that when a file that does not exist is loaded (or tried to) then an exception is raised"""
-    hook = pgres_hook()
+    hook = PgHook()
     table_md_mock = table_metadata_mock()
     sql_gen = SQLGenerator(table_md=table_md_mock)
     with pytest.raises(FileNotFoundError):

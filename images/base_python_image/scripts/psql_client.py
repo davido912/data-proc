@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import logging
 from sql_gen import SQLGenerator, TableMD
 from typing import Optional, Union
-from os.path import isfile
+from os.path import isfile, expandvars
 
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,11 +31,11 @@ class PgHook:
     :type port: str
     """
 
-    database: str
-    user: str
-    password: str
-    host: str
-    port: str
+    database: str = expandvars("$POSTGRES_DB")
+    user: str = expandvars("$POSTGRES_USER")
+    password: str = expandvars("$POSTGRES_PASSWORD")
+    host: str = expandvars("$POSTGRES_HOST")
+    port: str = expandvars("$POSTGRES_PORT")
 
     def get_conn(self) -> psycopg2.extensions.connection:
         """
