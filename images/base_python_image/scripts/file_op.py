@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
-# TODO ADD CASES WHEN DATE DOES NOT EXIST AND SO FORTH
 def extract_data(
     src_path: str,
     dst_path: str,
@@ -33,8 +32,9 @@ def extract_data(
     :type date_filter_val: Optional[str]
     """
     df = pd.read_json(path_or_buf=src_path)
-    # TODO: unit test that between only gets the dates on the day we expect
     if date_filter_key and date_filter_val:
+        # ensure that pandas column is in correct datetime format for filtering
+        df[date_filter_key] = pd.to_datetime(df[date_filter_key])
         # this will raise a significant ValueError if format does not correlate
         start_date = datetime.strptime(date_filter_val, "%Y-%m-%d")
         end_date = start_date + timedelta(days=1)
@@ -42,9 +42,7 @@ def extract_data(
     df.to_csv(dst_path, index=False)
 
 
-#TODO add more significant values when files dont exist so an indication that nothing was loaded exists
 def import_sources(
-    pg_hook: PgHook,
     tables_md_dir: str,
     raw_data_dir: str,
     date_filter_val: Optional[str] = None,
@@ -53,8 +51,6 @@ def import_sources(
     This function iterates over table metadata files in a specific directory path, importing
     all of them and loading them to a PostgreSQL database. Glob is used to load several files (if relevant)
     using file prefix.
-    :param pg_hook: PostgreSQL connection client
-    :type pg_hook: PgHook
     :param tables_md_dir: Path leading to table metadata directory
     :type tables_md_dir: str
     :param raw_data_dir: Path leading to raw output to extract data from
@@ -67,8 +63,13 @@ def import_sources(
         logger.debug(f"processing data for table {md.table_name}")
         src_dir_path = join(raw_data_dir, md.load_prefix)
         logger.debug(f"src_dir_path is {src_dir_path}")
+
         with TemporaryDirectory(dir="/tmp", prefix=md.load_prefix) as tmpdir:
-            for i, file in enumerate(glob(join(src_dir_path, "**"))):
+            input_data = glob(join(src_dir_path, "*"))
+            if not input_data:
+                logger.info(f"no files were found in {src_dir_path}")
+
+            for i, file in enumerate(input_data):
                 src_file_path = join(src_dir_path, file)
                 logger.debug(f"src_file_path is {src_file_path}")
                 dst_file_path = join(tmpdir, md.load_prefix + str(i))
@@ -81,4 +82,5 @@ def import_sources(
                     date_filter_key=md.filter_key,
                     date_filter_val=date_filter_val,
                 )
+                pg_hook = PgHook()
                 pg_hook.load_to_table(table_md=md, src_path=dst_file_path)

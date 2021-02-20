@@ -1,39 +1,11 @@
 import pytest
 from sql_gen import SQLGenerator, TableMD
-from tempfile import NamedTemporaryFile
-
-MOCK_YAML = """
-table_name: test_table_delta
-load_prefix: test
-schema: test
-
-delimiter: ","
-filter_key: id
-
-delta_params:
-  master_table: test_table
-  delta_key: id
-
-columns:
-  - name: id
-    type: varchar
-    length: 300
-  - name: event_type
-    type: varchar
-    length: 100
-  - name: received_at
-    type: timestamp
-"""
+from tests.mocks import get_mock_table_md
 
 
-def get_mock_table_md():
-    with NamedTemporaryFile() as f:
-        f.write(MOCK_YAML.encode("utf-8"))
-        f.seek(0)
-        md = TableMD(f.name)
-    return md
-
-
+#########################
+### TableMD tests
+##########
 def test_table_md():
     md = get_mock_table_md()
     # note - we could also use Marshmallow to define a schema but this is overkill at the moment
@@ -42,11 +14,11 @@ def test_table_md():
     assert md.columns == [
         {"name": "id", "type": "varchar", "length": 300},
         {"name": "event_type", "type": "varchar", "length": 100},
-        {"name": "received_at", "type": "timestamp"},
+        {"name": "event_ts", "type": "timestamp"},
     ]
     assert md.delimiter == ","
     assert md.load_prefix == "test"
-    assert md.filter_key == "id"
+    assert md.filter_key == "event_ts"
     assert md.delta_params == {
         "master_table": "test_table",
         "delta_key": "id",
@@ -76,7 +48,7 @@ def test_create_table_query():
     gen = SQLGenerator(md)
     query = gen.create_table_query()
     expected = """
-CREATE TABLE IF NOT EXISTS test.test_table_delta(id varchar(300),event_type varchar(100),received_at timestamp);
+CREATE TABLE IF NOT EXISTS test.test_table_delta(id varchar(300),event_type varchar(100),event_ts timestamp);
     """
     assert query.strip() == expected.strip()
 
@@ -85,7 +57,7 @@ def test_copy_query():
     md = get_mock_table_md()
     gen = SQLGenerator(md)
     query = gen.copy_query()
-    expected = """COPY test.test_table_delta (id,event_type,received_at) FROM STDIN
+    expected = """COPY test.test_table_delta (id,event_type,event_ts) FROM STDIN
     WITH
     DELIMITER ','
     CSV HEADER
