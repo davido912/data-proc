@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from psql_client import PgHook
 from sql_gen import SQLGenerator
 from tempfile import NamedTemporaryFile
+pytestmark = pytest.mark.unittests
 
 MOCK_DB_AUTH = {
     "database": "test",

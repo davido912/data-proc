@@ -1,6 +1,7 @@
 import pytest
 from sql_gen import SQLGenerator, TableMD
 from tests.mocks import get_mock_table_md
+pytestmark = pytest.mark.unittests
 
 
 #########################
@@ -78,3 +79,4 @@ def test_upsert_on_id_query():
 """
     # comparing exact match of string because spaces can cause unexpected assertion failures
     assert query.replace(" ", "") == expected.replace(" ", "")
+
