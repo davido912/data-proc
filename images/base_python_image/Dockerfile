@@ -1,6 +1,7 @@
 FROM python:3.7.10-slim-buster
 
 COPY requirements.txt /requirements.txt
+COPY pytest.ini /project/pytest.ini
 COPY /in_container/tmux.sh /tmux.sh
 
 ADD scripts /project/scripts
@@ -17,3 +18,5 @@ RUN apt-get update -y -q  \
                 && rm -rf /var/lib/apt/lists/*
 
 RUN $(command -v pip) install --user --no-cache-dir -r /requirements.txt
+
+WORKDIR /project

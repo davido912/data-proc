@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+
+  tests:
+    image: python:3.7.10-slim
+    build: ./images/base_python_image/
+    depends_on:
+      - postgres_db
+    command: bash -c "while !</dev/tcp/postgres-db/5432; do sleep 2; done;
+            python -m pytest -m unittests -s -v && python -m pytest -m integration -s -v"
+    container_name: tests
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events
+      POSTGRES_HOST: postgres-db
+      POSTGRES_PORT: 5432
+      PYTHONPATH: /project/scripts
+    volumes:
+      - data:/tmp
+
+volumes:
+  data:
