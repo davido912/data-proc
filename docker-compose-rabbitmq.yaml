@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+
+  rabbitmq:
+    image: rabbitmq-cust
+    build: ./images/rabbitmq
+    container_name: rabbitmq-broker
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  postgres_db:
+    image:  postgres-cust
+    build: ./images/postgresql/
+    container_name: postgres-db
+    restart: unless-stopped
+    environment: &postgres-auth
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events
+    ports:
+      - "5432:5432"
+
+
+  producer:
+    image: python:3.7.10-slim
+    build: ./images/base_python_image/
+    command: bash -c "/wait_for_rabbitmq.sh && python /project/scripts/queue_implementation/main.py producer"
+    depends_on:
+      - rabbitmq
+      - postgres_db
+    #      - tests
+    container_name: python-producer
+    environment:
+      PYTHONPATH: /project/scripts
+      RABBITMQ_HOST: rabbitmq
+
+
+  consumer:
+    image: python:3.7.10-slim
+    restart: always
+    depends_on:
+      - rabbitmq
+      - postgres_db
+    #      - tests
+    tty: true # keeps container running in interactive mode
+    command: bash -c "/wait_for_rabbitmq.sh && python /project/scripts/queue_implementation/main.py consumer-batch"
+    container_name: python-consumer
+    environment:
+      <<: *postgres-auth
+      POSTGRES_HOST: postgres-db
+      POSTGRES_PORT: 5432
+      PYTHONPATH: /project/scripts
+      RABBITMQ_HOST: rabbitmq
+
+
