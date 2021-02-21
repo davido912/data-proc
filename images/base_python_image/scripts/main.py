@@ -21,12 +21,13 @@ def cli() -> Union[str, None]:
         """Choose one of the following: \n
     (1) load all events 
     (2) load specific date from events
+    (3) exit
     ** Organizations related data is loaded in full in either of the choices
     """
     )
     while True:
         choice = input("Your choice: ")
-        if choice in ["1", "2"]:
+        if choice in ["1", "2", "3"]:
             break
         print("Invalid selection, please choose again")
     while True:
@@ -43,14 +44,18 @@ def cli() -> Union[str, None]:
                 print(
                     "Invalid date format, please enter a date that is in YYYY-MM-DD format"
                 )
+        elif choice == "3":
+            return "3"
 
 
-def main():
+def main(table_metadata_dir: str, raw_data_dir: str) -> None:
     while True:
         val = cli()
+        if val == "3":
+            break
         import_sources(
-            tables_md_dir=TABLE_METADATA_DIR,
-            raw_data_dir=RAW_DATA_DIR,
+            tables_md_dir=table_metadata_dir,
+            raw_data_dir=raw_data_dir,
             date_filter_val=val,
         )
 
@@ -62,4 +67,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(table_metadata_dir=TABLE_METADATA_DIR,
+         raw_data_dir=RAW_DATA_DIR)
