@@ -9,6 +9,7 @@ class TableMD:
     :param table_md_path: Path to a table metadata YAML file
     :type table_md_path: str
     """
+
     table_md_path: str
 
     def __post_init__(self):
@@ -32,8 +33,8 @@ class TableMD:
         return self.table_md["delimiter"]
 
     @property
-    def load_prefix(self) -> str:
-        return self.table_md["load_prefix"]
+    def load_prefix(self) -> Union[str, None]:
+        return self.table_md.get("load_prefix")
 
     @property
     def filter_key(self) -> Union[str, None]:
@@ -43,6 +44,7 @@ class TableMD:
     @property
     def delta_params(self) -> Union[Dict, None]:
         return self.table_md.get("delta_params")
+
 
 @dataclass
 class SQLGenerator:
@@ -73,6 +75,12 @@ class SQLGenerator:
             schema=self.table_md.schema_name,
             table_name=self.table_md.table_name,
             columns=",".join(columns),
+        )
+
+    def insert_values_into(self, values: list):
+        return """INSERT INTO {dst_schema}.{dst_table} VALUES ({values})
+        """.format(
+            dst_schema=self.table_md.schema_name, dst_table=self.table_md.table_name, values=",".join(values)
         )
 
     def copy_query(self) -> str:

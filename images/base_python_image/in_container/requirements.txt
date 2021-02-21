@@ -5,3 +5,5 @@ termcolor
 pyfiglet
 pytest
 pytest-mock
+pika
+watchdog
