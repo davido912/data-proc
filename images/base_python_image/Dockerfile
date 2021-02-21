@@ -1,8 +1,9 @@
 FROM python:3.7.10-slim-buster
 
-COPY requirements.txt /requirements.txt
-COPY pytest.ini /project/pytest.ini
+COPY /in_container/requirements.txt /requirements.txt
+COPY /in_container/pytest.ini /project/pytest.ini
 COPY /in_container/tmux.sh /tmux.sh
+COPY /in_container/wait_for_rabbitmq.sh /wait_for_rabbitmq.sh
 
 ADD scripts /project/scripts
 ADD raw_data /project/raw_data
@@ -13,6 +14,7 @@ RUN apt-get update -y -q  \
                 gcc\
                 vim \
                 tmux \
+                curl \
                 postgresql-client \
                 && apt-get clean \
                 && rm -rf /var/lib/apt/lists/*
