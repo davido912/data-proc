@@ -6,11 +6,18 @@ from psql_client import PgHook
 
 class Consumer:
     """
-    #TODO: DO THIS
+    This consumer can consume events in two ways:
+    (a) Consume events one by one, using a table metadata YAML to extract fields from each message and accordingly
+    generating the appropriate SQL to ingest the data
+    (b) Consume events in batches of 5, where after every 5 events consumes, they're loaded to the database.
+    If there are less than 5 messages left in the queue, it is left to the inactivity timeout to kick
+    in and initiate the loading process
     :param host: Host name of the RabbitMQ broker (e.g. localhost/container name)
     :type host: str
     :param queue: RabbitMQ queue to publish messages onto
     :type queue: str
+    :param table_md: Table metadata YAML used to create the table and extract relevant fields from the events
+    :type table_md: TableMD
     """
     # I chose to use the default Exchange instead of creating a new one for simplicity
 
