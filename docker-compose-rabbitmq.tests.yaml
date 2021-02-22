@@ -1,0 +1,22 @@
+version: "3.8"
+
+
+services:
+
+  tests:
+    image: python:3.7.10-slim
+    build: ./images/base_python_image/
+    depends_on:
+      - postgres_db
+    command: bash -c "/wait_for_rabbitmq.sh && python -m pytest -m unittests_rabbitmq -s -v"
+    container_name: tests
+    environment:
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: events
+      POSTGRES_HOST: postgres-db
+      POSTGRES_PORT: 5432
+      PYTHONPATH: /project/scripts
+      RABBITMQ_HOST: rabbitmq
+
+

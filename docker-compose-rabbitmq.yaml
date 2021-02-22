@@ -31,11 +31,13 @@ services:
     depends_on:
       - rabbitmq
       - postgres_db
-    #      - tests
+      - tests
     container_name: python-producer
     environment:
       PYTHONPATH: /project/scripts
       RABBITMQ_HOST: rabbitmq
+    volumes:
+      - raw_data:/project/raw_data/events/
 
 
   consumer:
@@ -44,8 +46,7 @@ services:
     depends_on:
       - rabbitmq
       - postgres_db
-    #      - tests
-    tty: true # keeps container running in interactive mode
+      - tests
     command: bash -c "/wait_for_rabbitmq.sh && python /project/scripts/queue_implementation/main.py consumer-batch"
     container_name: python-consumer
     environment:
@@ -56,3 +57,18 @@ services:
       RABBITMQ_HOST: rabbitmq
 
 
+  cli:
+    image: python:3.7.10-slim
+    restart: always
+    depends_on:
+      - rabbitmq
+      - postgres_db
+      - tests
+    tty: true # keeps container running in interactive mode
+    container_name: cli
+    volumes:
+      - ./images/base_python_image/raw_data/events:/tmp
+      - raw_data:/raw_data/
+
+volumes:
+  raw_data:
