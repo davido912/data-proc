@@ -58,5 +58,5 @@ def test_import_sources():
     pg_hook = PgHook()
     with pg_hook.get_conn() as conn:
         with conn.cursor() as cur:
-            cur.execute(f"SELECT * FROM test.test_table_delta;")
+            cur.execute("SELECT * FROM test.test_table_delta;")
             assert cur.fetchall() == expected
