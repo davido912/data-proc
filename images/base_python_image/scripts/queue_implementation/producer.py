@@ -2,6 +2,13 @@ import pika
 
 
 class Producer:
+    """
+    Basic RabbitMQ producer to publish messages to a designated queue
+    :param host: Host name of the RabbitMQ broker (e.g. localhost/container name)
+    :type host: str
+    :param queue: RabbitMQ queue to publish messages onto
+    :type queue: str
+    """
     # I chose to use the default Exchange instead of creating a new one for simplicity
     def __init__(self, host: str, queue: str):
         self.host = host

@@ -5,6 +5,13 @@ from psql_client import PgHook
 
 
 class Consumer:
+    """
+    #TODO: DO THIS
+    :param host: Host name of the RabbitMQ broker (e.g. localhost/container name)
+    :type host: str
+    :param queue: RabbitMQ queue to publish messages onto
+    :type queue: str
+    """
     # I chose to use the default Exchange instead of creating a new one for simplicity
 
     def __init__(self, host: str, queue: str, table_md: TableMD):
@@ -36,7 +43,7 @@ class Consumer:
     def batch_load_to_pgres(self):
         """
         Inactivity timeout is added in cases where there are less than 5 messages left in the queue. If no further messages
-        arrive in 15 seconds, the inactivity timeout kicks in and triggers the processing ofthe batch currently
+        arrive in 15 seconds, the inactivity timeout kicks in and triggers the processing of the batch currently
         stored in memory.
         """
         sql_gen = SQLGenerator(self.table_md)
@@ -49,7 +56,7 @@ class Consumer:
                 batch = []
                 # Get five messages and break out.
                 for method_frame, properties, body in channel.consume(
-                    "events", inactivity_timeout=15
+                    queue=self.queue, inactivity_timeout=15
                 ):
 
                     # if no more messages exist in the queue, break out of the loop

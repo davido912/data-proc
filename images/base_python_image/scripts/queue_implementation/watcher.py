@@ -12,12 +12,24 @@ from termcolor import colored
 
 
 class Watcher:
+    """
+    This class uses the Watchdog module at its core to monitor changes in directory. Only .json files are monitored.
+    To note, Watchdog does not parse files that have already existed in the target path, therefore a normal queue is used
+    to first parse the directory and then monitor any following changes.
+    The Watcher triggers the Producer to publish events on RabbitMQ whenever new .json files are added.
+    :param path: Host name of the RabbitMQ broker (e.g. localhost/container name)
+    :type path: str
+    :param watchdog_queue: Queue used by watchdog for parsing files already existing in the monitor directory
+    :type watchdog_queue: Queue
+    :param rabbitmq_queue: Designated RabbitMQ queue to publish messages onto
+    :type rabbitmq_queue: str
+    """
 
     regexes = [r".*.json$"]
     ignore_directories = True
     case_sensitive = True
 
-    def __init__(self, path: str, watchdog_queue: Queue, rabbitmq_queue: str):
+    def __init__(self, path: str, watchdog_queue: Queue, rabbitmq_queue: str) -> None:
         self.rabbitmq_queue = rabbitmq_queue
         self.path = path
         self.event_handler = RegexMatchingEventHandler(
@@ -26,17 +38,17 @@ class Watcher:
             case_sensitive=self.case_sensitive,
         )
         self.event_handler.on_created = self.__on_created_event
-        self.queue = watchdog_queue
+        self.watchdog_queue = watchdog_queue
         for file in listdir(path):
             fpath = join(path, file)
             if isfile(fpath):
                 event = FileCreatedEvent(fpath)
-                self.queue.put(item=event)
+                self.watchdog_queue.put(item=event)
 
         while not watchdog_queue.empty():
             self.__on_created_event(watchdog_queue.get())
 
-    def __on_created_event(self, event):
+    def __on_created_event(self, event: FileCreatedEvent) -> None:
         print(f"{event.src_path} has been created")
         producer = Producer(
             host=expandvars("$RABBITMQ_HOST"), queue=self.rabbitmq_queue
@@ -60,7 +72,7 @@ class Watcher:
         shutil.move(src=event.src_path, dst=processed_dir)
         producer.close()
 
-    def start(self):
+    def start(self) -> None:
         observer = Observer()
         observer.schedule(self.event_handler, self.path, recursive=True)
         observer.start()
