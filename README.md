@@ -55,7 +55,11 @@ While being in the root directory execute the following to initialise the projec
 
 Do note that once you deploy the application, unittests/integration tests will also run and logs would be 
 printed onto the terminal. On success, a CLI interface will be launched with a split screen (using TMUX) to communicate with the application
-and to be able and query the database to view the results. 
+and to be able and query the database to view the results.
+
+Using the CLI, in Architecture A you have the option of loading the data in full or selecting a specific data to load. 
+in Architecture B, you have the option to use the CLI spawned to drop the same events file over and over again and have it 
+be loaded.  
 
 
 #### Tmux
