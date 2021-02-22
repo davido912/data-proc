@@ -67,6 +67,8 @@ be loaded.
 with the architecture deployed. On the deployment of the application, the `run.sh` script enters the application container
 and executes a tmux shell to split the terminal into two.
 
+![picture](https://app.lucidchart.com/publicSegments/view/892d9b2a-68ec-4724-9464-ce4c7f1a3b8a/image.png)
+
 In order switch between the split screens, use (ctrl+B) + O. Make sure to click ctrl+B at the same time and then O. You
 should see the green lining switch between the screens. 
 
@@ -94,7 +96,7 @@ It is important to note that some practices taken in this project may not be fit
 ## Fun fact
 For closure of this project, using Architecture B with RabbitMQ, I packed in an inner queue to parse the directory 
 that stores events using [watchdog](https://pypi.org/project/watchdog/). You can give it a shot and dump a JSON
-file similar in structure to raw_events.yaml inside of `images/base_python_image/raw_data/events` (make sure it ends with .json)
-and watch it live in action. ;)
- 
-You can of course browse the data loaded in the Postgres database
+file similar in structure to events_sample.json and named as `custom_sample.json`  inside of `images/base_python_image/raw_data/events` (make sure it ends with .json).
+The file is then mounted into the cli container. Select `(2)` for loading the custom file and watch it live in action. ;)
+
+You can browse the data loaded in the Postgres database.
