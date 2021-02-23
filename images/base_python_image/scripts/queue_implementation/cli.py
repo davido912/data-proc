@@ -14,11 +14,12 @@ def cli() -> int:
         """Press 1 in order to drop a file containing events in the raw data directory: \n
         (1) drop file in raw data dir
         (2) drop custom file in raw data dir
+        (3) exit
     """
     )
     while True:
         choice = input("Your choice: ")
-        if choice in ["1", "2"]:
+        if choice in ["1", "2", "3"]:
             break
         print(colored("Invalid selection, please choose again", "red"))
 
@@ -29,6 +30,9 @@ def cli() -> int:
         elif choice == "2":
             print(colored("Loading all data from custom_sample.json", "green"))
             return 2
+        elif choice == "3":
+            print("exiting")
+            return 3
 
 
 def exec() -> None:
@@ -39,7 +43,7 @@ def exec() -> None:
                 src="/src/events_sample.json",
                 dst=f"/raw_data/events_sample_{str(random.getrandbits(50))}.json",
             )
-        if val == 2:
+        elif val == 2:
             try:
                 move(
                     src="/src/custom_sample.json",
@@ -52,6 +56,8 @@ def exec() -> None:
                         "red",
                     )
                 )
+        elif val == 3:
+            break
 
 
 if __name__ == "__main__":
