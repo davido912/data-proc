@@ -15,13 +15,12 @@ if [ "$#" -ne 1 ]; then
 fi
 
 COMMAND=$1
-
 function evalTests() {
   local TESTS_EXIT_CODE=${1}
   docker logs tests
-
   if [ -z ${TESTS_EXIT_CODE+x} ] || [ "$TESTS_EXIT_CODE" -ne 0 ]; then
     printf "${RED}Tests Failed${NC} - Exit Code: $TESTS_EXIT_CODE\n"
+
     exit 1
   else
     printf "${GREEN}Tests Passed${NC}\n"
@@ -29,16 +28,16 @@ function evalTests() {
 }
 
 if [[ $COMMAND == "--deploy" ]]; then
-  docker-compose -f docker-compose.yaml -f docker-compose.tests.yaml up -d
+  docker-compose -f docker-compose.yaml -f docker-compose.tests.yaml up -d --build
   TESTS_EXIT_CODE=$(docker wait tests)
-  evalTests TESTS_EXIT_CODE
+  evalTests $TESTS_EXIT_CODE
   sleep 4 # the sleep here is just to have a few seconds to glance at the logs printed
   docker exec -it python-app /bin/bash /tmux.sh
 
 elif [[ $COMMAND == "--deploy-rabbitmq" ]]; then
-  docker-compose -f docker-compose-rabbitmq.yaml -f docker-compose-rabbitmq.tests.yaml up -d
+  docker-compose -f docker-compose-rabbitmq.yaml -f docker-compose-rabbitmq.tests.yaml up -d --build
   TESTS_EXIT_CODE=$(docker wait tests)
-  evalTests TESTS_EXIT_CODE
+  evalTests $TESTS_EXIT_CODE
   sleep 4 # the sleep here is just to have a few seconds to glance at the logs printed
   docker exec -it cli /bin/bash /tmux.sh rabbitmq
 

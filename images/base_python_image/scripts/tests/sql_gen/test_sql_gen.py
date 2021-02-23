@@ -1,6 +1,7 @@
 import pytest
 from sql_gen import SQLGenerator, TableMD
 from tests.mocks import get_mock_table_md
+
 pytestmark = pytest.mark.unittests
 
 
@@ -54,6 +55,14 @@ CREATE TABLE IF NOT EXISTS test.test_table_delta(id varchar(300),event_type varc
     assert query.strip() == expected.strip()
 
 
+def test_insert_value_into():
+    md = get_mock_table_md()
+    gen = SQLGenerator(md)
+    query = gen.insert_values_into(["test", "test", "2020-12-08 20:03:16.759617"])
+    expected = "INSERT INTO test.test_table_delta VALUES ('test','test','2020-12-08 20:03:16.759617');"
+    assert query.strip() == expected.strip()
+
+
 def test_copy_query():
     md = get_mock_table_md()
     gen = SQLGenerator(md)
@@ -79,4 +88,3 @@ def test_upsert_on_id_query():
 """
     # comparing exact match of string because spaces can cause unexpected assertion failures
     assert query.replace(" ", "") == expected.replace(" ", "")
-

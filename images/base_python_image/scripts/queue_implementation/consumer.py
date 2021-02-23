@@ -37,7 +37,7 @@ class Consumer:
     def __load_to_pgres_callback(self, ch, method, properties, body):
         data = json.loads(body)
         # encapsulating values inside single quotes for loading into the database
-        row = ["'{}'".format(data[entry]) for entry in self.fields]
+        row = [data[field] for field in self.fields]
         hook = PgHook()
         sql_gen = SQLGenerator(self.table_md)
         queries = [
@@ -70,7 +70,7 @@ class Consumer:
                     if not method_frame:
                         break
                     data = json.loads(body)
-                    row = ["'{}'".format(data[entry]) for entry in self.fields]
+                    row = [data[field] for field in self.fields]
                     batch.append(sql_gen.insert_values_into(values=row))
                     channel.basic_ack(method_frame.delivery_tag)
 

@@ -78,9 +78,11 @@ class SQLGenerator:
         )
 
     def insert_values_into(self, values: list):
-        return """INSERT INTO {dst_schema}.{dst_table} VALUES ({values})
+        return """INSERT INTO {dst_schema}.{dst_table} VALUES ({values});
         """.format(
-            dst_schema=self.table_md.schema_name, dst_table=self.table_md.table_name, values=",".join(values)
+            dst_schema=self.table_md.schema_name,
+            dst_table=self.table_md.table_name,
+            values=",".join(["'{}'".format(value) for value in values]),
         )
 
     def copy_query(self) -> str:

@@ -37,7 +37,7 @@ def test_import_sources():
     raw_data_dir = TemporaryDirectory(dir="/tmp", prefix="raw_data")
     test_data_dir = join(raw_data_dir.name, "test")
     mkdir(test_data_dir)
-    raw_data_file = NamedTemporaryFile(dir=test_data_dir, prefix="test")
+    raw_data_file = NamedTemporaryFile(dir=test_data_dir, prefix="test", suffix=".json")
     raw_data_file.write(get_mock_json().encode("utf-8"))
     raw_data_file.flush()
 

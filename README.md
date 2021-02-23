@@ -4,10 +4,15 @@
 This project uses different technologies to automate the ingestion and modelling of data. 
 
 It is important to note that technologies such as Airflow or other orchestration technologies were purposefully not
-used. The project uses containerised setup for deploying the required resources.
+used. The project uses a containerised setup for deploying the required resources.
 
-Doing this project, I'm following the assumption that the data I have is always in that structure, and therefore I employed
-no schema validations to the data.     
+Doing this project, I'm following the assumption that my data sources are composed of two:
+* Event data
+* Organisation data
+
+Furthermore, I'm also taking the assumption that the data can always be consumed from beginning to end, let's imagine 
+for this case that the data is stored in full in some API that allows backfilling from start when needed. This is relevant
+for the approach I'm taking when loading the data (check the `Modelling` section).
 
 
 ## Problem
@@ -43,14 +48,14 @@ sits on the other side listening for those events and loading them to PostgreSQL
 ## Quickstart 
 The repository's root directory contains an executable `run.sh`.
 The quickstart executable can be used with 4 different flags:
-* `deploy` - runs Architecture A
-* `destroy` - Destroys all resources created by Architecture A
-* `deploy-rabbitmq` - runs Architecture B
-* `destroy-rabbitmq` - Destroys all resources created by Architecture B
+* `--deploy` - runs Architecture A
+* `--destroy` - Destroys all resources created by Architecture A
+* `--deploy-rabbitmq` - runs Architecture B
+* `--destroy-rabbitmq` - Destroys all resources created by Architecture B
 
-While being in the root directory execute the following to initialise the project:
+For example, while being in the root directory execute the following to initialise the project:
 ```
-./run.sh deploy
+./run.sh --deploy
 ```
 
 Do note that once you deploy the application, unittests/integration tests will also run and logs would be 
@@ -58,8 +63,8 @@ printed onto the terminal. On success, a CLI interface will be launched with a s
 and to be able and query the database to view the results.
 
 Using the CLI, in Architecture A you have the option of loading the data in full or selecting a specific data to load. 
-in Architecture B, you have the option to use the CLI spawned to drop the same events file over and over again and have it 
-be loaded.  
+In Architecture B, you have the option to use the CLI to drop the same events file over and over again and have it 
+be loaded (to start the process, drop a file first to have it processes, logs can be checked using `docker logs` on the relevant container).  
 
 
 #### Tmux
@@ -69,18 +74,21 @@ and executes a tmux shell to split the terminal into two.
 
 ![picture](https://app.lucidchart.com/publicSegments/view/892d9b2a-68ec-4724-9464-ce4c7f1a3b8a/image.png)
 
-In order switch between the split screens, use (ctrl+B) + O. Make sure to click ctrl+B at the same time and then O. You
+In order switch between the split screens, use (ctrl+b) + o (not capital O but small o). Make sure to click ctrl+B at the same time and then O. You
 should see the green lining switch between the screens. 
 
-In order to scroll up and down on selected screen, use (ctrl + B) + [, and then scroll with the arrows. 
+In order to scroll up and down on selected screen, use (ctrl + b) + [, and then scroll with the arrows (q to exit scroll mode). 
  
 ### Modelling
-The following graph depicts the database structure composed of two schemas: raw, modelled.
-The raw schemas includes all data loaded as it is. 
+The following graph depicts the database structure composed of two schemas: staging, modelled.
+The staging schema includes all data loaded as it is. 
 
 Note, in Architecture A, data is loaded in deltas, meaning that if a specific date was chosen out of the dataset
 for loading, then it will be loaded into the delta table, and then upserted into the master table. That way, it is easier
-to browse the latest data that was loaded (assuming we aren't backing up somewhere at the moment).
+to browse the latest data that was loaded (assuming we aren't backing up somewhere else at the moment). Furthermore, I added
+an upserting mechanism that deletes existing entries based on received_at date, that way there are no duplicates produced
+on the master table when loading over and over again. Please do take into account that this decision was made considering
+the assumption that the data source is always present for consumption in full.
 
 In Architecture B, the data is loaded in full. 
 
@@ -90,11 +98,8 @@ The modelled data displays aggregates by the received_at date. Measures such as 
 total events by date per organisation, total events by date per user type can be explored.  
 
 
-## Remarks
-It is important to note that some practices taken in this project may not be fit for production use.
-
-## Fun fact
-For closure of this project, using Architecture B with RabbitMQ, I packed in an inner queue to parse the directory 
+## Just for funsies
+Using Architecture B with RabbitMQ, I packed in an inner queue to parse the directory 
 that stores events using [watchdog](https://pypi.org/project/watchdog/). You can give it a shot and dump a JSON
 file similar in structure to events_sample.json and named as `custom_sample.json`  inside of `images/base_python_image/raw_data/events` (make sure it ends with .json).
 The file is then mounted into the cli container. Select `(2)` for loading the custom file and watch it live in action. ;)

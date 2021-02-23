@@ -50,7 +50,7 @@ def import_sources(
     """
     This function iterates over table metadata files in a specific directory path, importing
     all of them and loading them to a PostgreSQL database. Glob is used to load several files (if relevant)
-    using file prefix.
+    using file prefix. Note that files must end with a .json suffix.
     :param tables_md_dir: Path leading to table metadata directory
     :type tables_md_dir: str
     :param raw_data_dir: Path leading to raw output to extract data from
@@ -65,7 +65,7 @@ def import_sources(
         logger.debug(f"src_dir_path is {src_dir_path}")
 
         with TemporaryDirectory(dir="/tmp", prefix=md.load_prefix) as tmpdir:
-            input_data = glob(join(src_dir_path, "*"))
+            input_data = glob(join(src_dir_path, "*.json"))
             if not input_data:
                 logger.info(f"no files were found in {src_dir_path}")
 

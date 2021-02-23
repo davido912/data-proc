@@ -1,5 +1,5 @@
 table_name: raw_events
-schema: raw
+schema: staging
 
 delimiter: ","
 filter_key: received_at

@@ -20,7 +20,7 @@ def cli() -> int:
         choice = input("Your choice: ")
         if choice in ["1", "2"]:
             break
-        print(colored("Invalid selection, please choose again"), "red")
+        print(colored("Invalid selection, please choose again", "red"))
 
     while True:
         if choice == "1":

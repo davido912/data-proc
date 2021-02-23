@@ -1,6 +1,6 @@
 table_name: raw_orgs
 load_prefix: orgs
-schema: raw
+schema: staging
 delimiter: ","
 
 columns:

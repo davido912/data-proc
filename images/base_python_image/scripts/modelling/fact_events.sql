@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS modelled.fact_events AS (
                username,
                user_type,
                organization_name
-        FROM raw.raw_events
+        FROM staging.raw_events
         GROUP BY 1, 2, 3, 4
     ),
          agg_events_by_date AS (
