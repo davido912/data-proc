@@ -67,7 +67,7 @@ services:
     tty: true # keeps container running in interactive mode
     container_name: cli
     volumes:
-      - ./images/base_python_image/raw_data/events:/tmp
+      - ./images/base_python_image/raw_data/events:/src
       - raw_data:/raw_data/
 
 volumes:

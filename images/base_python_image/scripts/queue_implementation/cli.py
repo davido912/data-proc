@@ -36,13 +36,13 @@ def exec() -> None:
         val = cli()
         if val == 1:
             copy(
-                src="/tmp/events_sample.json",
+                src="/src/events_sample.json",
                 dst=f"/raw_data/events_sample_{str(random.getrandbits(50))}.json",
             )
         if val == 2:
             try:
                 move(
-                    src="/tmp/custom_sample.json",
+                    src="/src/custom_sample.json",
                     dst=f"/raw_data/events_custom_{str(random.getrandbits(50))}.json",
                 )
             except FileNotFoundError:
