@@ -64,7 +64,8 @@ and to be able and query the database to view the results.
 
 Using the CLI, in Architecture A you have the option of loading the data in full or selecting a specific data to load. 
 In Architecture B, you have the option to use the CLI to drop the same events file over and over again and have it 
-be loaded (to start the process, drop a file first to have it processes, logs can be checked using `docker logs` on the relevant container).  
+be loaded (to start the process, drop a file first to have it processes, logs can be checked using `docker logs` on the relevant container). RabbitMQ GUI
+is also available on `localhost:15672` (guest:guest).  
 
 
 #### Tmux
